@@ -50,7 +50,7 @@ config = {
 
     # REDIRECTION #
     "redirect": {
-        "redirect": True, # Redirect to a webpage?
+        "redirect": False, # Redirect to a webpage?
         "page": "https://myaccount.google.com/?utm_source=account-marketing-page&utm_medium=go-to-account-button&pli=1" # Link to the webpage to redirect to 
     },
 
