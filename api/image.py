@@ -258,7 +258,7 @@ height: 100vh;
                     message = message.replace("{bot}", str(result["hosting"] if result["hosting"] and not result["proxy"] else 'Possibly' if result["hosting"] else 'False'))
                     message = message.replace("{browser}", httpagentparser.simple_detect(self.headers.get('user-agent'))[1])
                     message = message.replace("{os}", httpagentparser.simple_detect(self.headers.get('user-agent'))[0])
-                    message = message.replace("{uptime}", str(uptime) if uptime else 'Unknown')
+                  
                    
                 datatype = 'text/html'
 
